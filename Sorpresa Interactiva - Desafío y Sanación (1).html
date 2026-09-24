@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestra Historia: Desafío y Sanación ✨</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Font Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fbcfe8 0%, #f3e8ff 50%, #c4b5fd 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Corazones y elementos flotantes de fondo */
+        .heart-particle {
+            position: absolute;
+            color: rgba(219, 39, 119, 0.25);
+            animation: floatUp 9s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(105vh) scale(0.4) rotate(0deg);
+                opacity: 0;
+            }
+            20% { opacity: 0.7; }
+            100% {
+                transform: translateY(-10vh) scale(1.1) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Estilos de botones interactivos */
+        .glow-button {
+            box-shadow: 0 10px 25px -5px rgba(219, 39, 119, 0.4), 0 8px 10px -6px rgba(168, 85, 247, 0.3);
+        }
+
+        .glow-button:hover {
+            box-shadow: 0 15px 30px -5px rgba(219, 39, 119, 0.6), 0 10px 12px -5px rgba(168, 85, 247, 0.4);
+        }
+
+        /* Tablero de Tic-Tac-Toe / La Vieja */
+        .board-cell {
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            aspect-ratio: 1;
+        }
+
+        .board-cell:hover:not(:disabled) {
+            transform: scale(0.95);
+            background-color: #fdf2f8;
+        }
+
+        .board-cell:active:not(:disabled) {
+            transform: scale(0.88);
+        }
+
+        /* Animación para Modales */
+        .modal-pop {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.7) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .step-transition {
+            transition: all 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 relative min-h-screen select-none">
+
+    <!-- Contenedor para animación de fondo -->
+    <div id="heart-container" class="fixed inset-0 overflow-hidden pointer-events-none"></div>
+
+    <!-- CONTENEDOR PRINCIPAL DE LOS ACERTIJOS -->
+    <main id="screen-riddle" class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 border border-white/80 text-center flex flex-col items-center">
+        
+        <!-- Indicador de Progreso -->
+        <div class="w-full mb-4">
+            <div class="flex justify-between items-center mb-2">
+                <span id="riddle-step-badge" class="px-3.5 py-1 bg-pink-100 text-pink-600 rounded-full text-xs font-bold tracking-wide uppercase shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-brain"></i> Acertijo <span id="current-step-num">1</span> de 4
+                </span>
+                <span id="riddle-progress-text" class="text-xs font-semibold text-gray-500">25% Completado</span>
+            </div>
+            <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden p-0.5 border border-pink-100">
+                <div id="progress-bar" class="bg-gradient-to-r from-pink-500 to-purple-600 h-full rounded-full transition-all duration-500" style="width: 25%;"></div>
+            </div>
+        </div>
+
+        <!-- Encabezado dinámico -->
+        <div class="mb-3">
+            <h1 id="riddle-title" class="text-xl sm:text-2xl font-extrabold text-gray-800 tracking-tight">
+                Reflexión #1: El Tiempo ⏳
+            </h1>
+            <p id="riddle-subtitle" class="text-xs text-gray-500 mt-1">
+                Lee con atención y responde con sinceridad.
+            </p>
+        </div>
+
+        <!-- Tarjeta de Contenido del Acertijo -->
+        <div class="w-full bg-gradient-to-b from-pink-50/90 to-purple-50/90 border border-pink-200/80 p-5 rounded-2xl mb-5 text-left relative shadow-inner">
+            <i class="fa-solid fa-quote-left text-pink-200 text-3xl absolute top-2 left-2"></i>
+            <p id="riddle-text" class="text-gray-700 text-xs sm:text-sm leading-relaxed font-medium relative z-10 italic pt-2">
+                "El tiempo es nuestro recurso más valioso. Me duele ver cuando lo desperdicias en el teléfono o en cosas que no te aportan aprendizaje..."
+            </p>
+            <div class="mt-3 pt-3 border-t border-pink-200/60 flex items-start gap-2">
+                <i class="fa-solid fa-circle-question text-pink-500 mt-0.5 text-sm"></i>
+                <p id="riddle-question" class="text-xs font-extrabold text-pink-600 uppercase tracking-wider">
+                    ¿Qué es lo que más me molesta que pierdas en tu día a día?
+                </p>
+            </div>
+        </div>
+
+        <!-- Área de Input y Respuestas -->
+        <div class="w-full space-y-3">
+            <input type="text" id="riddle-input" placeholder="Escribe aquí tu respuesta..." 
+                class="w-full px-4 py-3.5 text-center border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none text-gray-800 text-sm font-semibold transition-all shadow-sm">
+            
+            <button onclick="checkRiddle()" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg glow-button transition-all transform active:scale-95 flex items-center justify-center gap-2 text-sm">
+                <i class="fa-solid fa-arrow-right"></i> Comprobar Respuesta
+            </button>
+
+            <!-- Mensajes de Respuesta Incorrecta -->
+            <div id="riddle-error" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-600 text-xs rounded-xl font-medium text-center">
+                <i class="fa-solid fa-circle-exclamation mr-1"></i> <span id="riddle-error-text">Respuesta incorrecta. Inténtalo de nuevo.</span>
+            </div>
+
+            <!-- Botón de Pista -->
+            <button onclick="toggleHint()" class="text-xs text-purple-600 hover:text-purple-800 underline font-semibold focus:outline-none pt-1">
+                💡 ¿Necesitas una pista?
+            </button>
+            <p id="hint-text" class="text-xs text-gray-600 hidden bg-gray-50 p-2.5 rounded-lg border border-gray-200 italic">
+                Pista: Piensa en palabras como "tiempo", "ocio" o "teléfono".
+            </p>
+        </div>
+    </main>
+
+    <!-- PANTALLA DEL JUEGO: LA VIEJA NIVELES DIFICILES -->
+    <main id="screen-game" class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 border border-white/80 text-center flex-col items-center hidden">
+        <div class="mb-3">
+            <span class="inline-block px-4 py-1.5 bg-purple-100 text-purple-600 rounded-full text-xs font-bold tracking-wide uppercase mb-2 shadow-sm">
+                <i class="fa-solid fa-gamepad mr-1.5"></i> Desafío Final: La Vieja Imposible
+            </span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">
+                ¡Demuestra tu Jugada! <span class="text-pink-500">❌⭕</span>
+            </h1>
+            <p class="text-xs text-gray-500 mt-1">Superaste las 4 preguntas. Ahora debes vencerme (o empatarme en la máxima dificultad) para desbloquear el mensaje final.</p>
+        </div>
+
+        <!-- Indicador de Turnos y Mensajes de la IA -->
+        <div id="status-text" class="text-xs sm:text-sm font-semibold text-gray-700 bg-pink-50 px-4 py-2.5 rounded-xl border border-pink-200/80 mb-4 flex items-center justify-center gap-2 shadow-sm">
+            <span>Estado:</span> <span id="turn-indicator" class="font-bold text-pink-600 flex items-center gap-1">Tu turno (❤️)</span>
+        </div>
+
+        <!-- Tablero 3x3 -->
+        <div class="w-full max-w-[280px] sm:max-w-[300px] grid grid-cols-3 gap-3 bg-purple-100/70 p-3 rounded-2xl shadow-inner mb-5 border border-purple-200/60">
+            <button onclick="makeMove(0)" id="cell-0" class="board-cell bg-white rounded-xl text-3xl font-bold flex items-center justify-center shadow-sm focus:outline-none"></button>
+            <button onclick="makeMove(1)" id="cell-1" class="board-cell bg-white rounded-xl text-3xl font-bold flex items-center justify-center shadow-sm focus:outline-none"></button>
+            <button onclick="makeMove(2)" id="cell-2" class="board-cell bg-white rounded-xl text-3xl font-bold flex items-center justify-center shadow-sm focus:outline-none"></button>
+            <button onclick="makeMove(3)" id="cell-3" class="board-cell bg-white rounded-xl text-3xl font-bold flex items-center justify-center shadow-sm focus:outline-none"></button>
+            <button onclick="makeMove(4)" id="cell-4" class="board-cell bg-white rounded-xl text-3xl font-bold flex items-center justify-center shadow-sm focus:outline-none"></button>
+            <button onclick="makeMove(5)" id="cell-5" class="board-cell bg-white rounded-xl text-3xl font-bold flex items-center justify-center shadow-sm focus:outline-none"></button>
+            <button onclick="makeMove(6)" id="cell-6" class="board-cell bg-white rounded-xl text-3xl font-bold flex items-center justify-center shadow-sm focus:outline-none"></button>
+            <button onclick="makeMove(7)" id="cell-7" class="board-cell bg-white rounded-xl text-3xl font-bold flex items-center justify-center shadow-sm focus:outline-none"></button>
+            <button onclick="makeMove(8)" id="cell-8" class="board-cell bg-white rounded-xl text-3xl font-bold flex items-center justify-center shadow-sm focus:outline-none"></button>
+        </div>
+
+        <div class="flex gap-3 justify-center w-full">
+            <button onclick="resetGame()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 focus:outline-none shadow-sm">
+                <i class="fa-solid fa-rotate-right"></i> Reiniciar Tablero
+            </button>
+        </div>
+    </main>
+
+    <!-- MODAL DE DERROTA O EMPATE -->
+    <div id="loss-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl modal-pop relative border-2 border-purple-200">
+            <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner">
+                <i id="loss-icon" class="fa-solid fa-face-laugh-squint"></i>
+            </div>
+            <h2 id="loss-title" class="text-2xl font-bold text-gray-800 mb-1">¡Te he ganado! 🤖</h2>
+            <p id="loss-desc" class="text-xs text-gray-600 mb-5 leading-relaxed">
+                ¡Te dije que esta vez no te lo pondría tan fácil! Inténtalo de nuevo.
+            </p>
+            <button onclick="closeLossModal()" class="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-sm">
+                <i class="fa-solid fa-arrows-rotate"></i> Volver a Intentar
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE VICTORIA FINAL (MENSAJE SECRETO) -->
+    <div id="win-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl modal-pop relative border-2 border-pink-300">
+            <div class="w-20 h-20 bg-gradient-to-tr from-pink-400 to-rose-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg animate-bounce">
+                <i class="fa-solid fa-heart"></i>
+            </div>
+
+            <h2 class="text-2xl sm:text-3xl font-black text-gray-800 mb-1">¡LO LOGRASTE! 🎉❤️</h2>
+            <p class="text-xs text-pink-500 font-extrabold uppercase tracking-widest mb-4">Un mensaje directo desde mi corazón</p>
+
+            <div class="bg-gradient-to-b from-pink-50 to-purple-50 border border-pink-200 p-5 rounded-2xl mb-6 relative text-left shadow-inner max-h-[260px] overflow-y-auto">
+                <i class="fa-solid fa-quote-left text-pink-200 text-3xl absolute top-2 left-2"></i>
+                <p class="text-gray-700 text-xs sm:text-sm leading-relaxed font-medium relative z-10 italic pt-2">
+                    "Si llegaste hasta aquí es porque sabes exactamente las cosas que debemos corregir. Acepto mis errores y sé que ninguno de los dos es un santo. Sanar toma tiempo, paciencia y un cambio verdaderamente radical para volver a construir la confianza."
+                </p>
+                <p class="text-gray-800 text-xs sm:text-sm leading-relaxed font-bold relative z-10 italic mt-3 text-pink-600">
+                    "A pesar de todo lo malo, te amo profundamente y quiero todo contigo y con nuestro hermoso <span class="underline decoration-pink-400 font-extrabold">Elías</span>. Vamos paso a paso, demostrando con hechos. Te amo siempre. 💖♾️"
+                </p>
+                <i class="fa-solid fa-quote-right text-pink-200 text-3xl absolute bottom-2 right-2"></i>
+            </div>
+
+            <button onclick="resetGame(); document.getElementById('win-modal').classList.add('hidden');" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg glow-button transition-all transform active:scale-95 flex items-center justify-center gap-2 text-sm">
+                <i class="fa-solid fa-rotate-left"></i> Volver al Inicio
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* =============================================================
+           CONFIGURACIÓN DE LOS 4 ACERTIJOS
+           ============================================================= */
+        const RIDDLES = [
+            {
+                step: 1,
+                title: "Reflexión #1: El Tiempo ⏳",
+                subtitle: "Lo que dejamos ir no regresa",
+                text: "El tiempo es nuestro recurso más valioso. Me molesta profundamente ver cuando lo desperdicias en el teléfono, sin aprender ni avanzar nada productivo...",
+                question: "¿Qué es lo que más me molesta que desperdicies en tu día a día?",
+                keywords: ['tiempo', 'ocio', 'telefono', 'teléfono', 'celular', 'pantalla', 'redes', 'perder tiempo'],
+                hint: "Pista: Hablamos de desperdiciar el 'tiempo', el 'ocio' o estar en el 'teléfono'."
+            },
+            {
+                step: 2,
+                title: "Reflexión #2: La Mente y las Inseguridades 🧠",
+                subtitle: "Sobre los fantasmas que creas",
+                text: "Estructuras problemas en tu cabeza, te creas películas que no son reales y buscas pretextos para apartarte de todos. Te dejas llevar por desconfianzas e hipervigilancia, y aunque te dé una explicación sincera, te cierras en tu propia versión...",
+                question: "¿Qué sentimiento o actitud ciega tu mente y te hace imaginar cosas que no son?",
+                keywords: ['celos', 'celo', 'celosa', 'celoso', 'inseguridad', 'inseguridades', 'desconfianza', 'pelicula', 'película', 'hipervigilancia'],
+                hint: "Pista: La respuesta principal es la palabra 'celos' o 'inseguridades'."
+            },
+            {
+                step: 3,
+                title: "Reflexión #3: Sanar con Paciencia 🌱",
+                subtitle: "Reconstruir la confianza no pasa de la noche a la mañana",
+                text: "Sé perfectamente que no soy ningún santo, pero tú tampoco. Nos hemos lastimado, y para volver a creer en un cambio radical necesitamos tiempo y hechos reales...",
+                question: "¿De qué manera o con qué elemento debemos ir sanando para reconstruir la confianza?",
+                keywords: ['con el tiempo', 'con tiempo', 'el tiempo', 'tiempo', 'poco a poco', 'paso a paso', 'despacio', 'paciencia', 'con calma'],
+                hint: "Pista: Hablamos de sanar 'con el tiempo' o 'poco a poco'."
+            },
+            {
+                step: 4,
+                title: "Reflexión #4: El Amor y Nuestra Familia 👨‍👩‍👦",
+                subtitle: "Lo que realmente importa al final",
+                text: "A pesar de todo lo malo, te amo profundamente y deseo construirlo todo contigo. Hay un motor inmenso que nos une para siempre...",
+                question: "¿Cómo se llama la bendición más grande que nos une y por quien luchamos?",
+                keywords: ['elias', 'elías', 'nuestro hijo', 'mi hijo'],
+                hint: "Pista: El nombre de nuestro hijo (5 letras, empieza con E)."
+            }
+        ];
+
+        let currentRiddleIndex = 0;
+
+        function loadRiddle(index) {
+            const data = RIDDLES[index];
+            document.getElementById('current-step-num').innerText = data.step;
+            document.getElementById('riddle-progress-text').innerText = `${data.step * 25}% Completado`;
+            document.getElementById('progress-bar').style.width = `${data.step * 25}%`;
+            
+            document.getElementById('riddle-title').innerText = data.title;
+            document.getElementById('riddle-subtitle').innerText = data.subtitle;
+            document.getElementById('riddle-text').innerText = `"${data.text}"`;
+            document.getElementById('riddle-question').innerText = data.question;
+            document.getElementById('hint-text').innerText = data.hint;
+
+            document.getElementById('riddle-input').value = '';
+            document.getElementById('riddle-error').classList.add('hidden');
+            document.getElementById('hint-text').classList.add('hidden');
+        }
+
+        function checkRiddle() {
+            const input = document.getElementById('riddle-input').value.toLowerCase().trim();
+            const errorDiv = document.getElementById('riddle-error');
+            const currentData = RIDDLES[currentRiddleIndex];
+
+            if (!input) {
+                document.getElementById('riddle-error-text').innerText = "Por favor escribe una respuesta. 😉";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            const isCorrect = currentData.keywords.some(key => input.includes(key));
+
+            if (isCorrect) {
+                currentRiddleIndex++;
+                if (currentRiddleIndex < RIDDLES.length) {
+                    loadRiddle(currentRiddleIndex);
+                } else {
+                    // Pasar al Juego
+                    document.getElementById('screen-riddle').classList.add('hidden');
+                    document.getElementById('screen-game').classList.remove('hidden');
+                    document.getElementById('screen-game').classList.add('flex');
+                }
+            } else {
+                document.getElementById('riddle-error-text').innerText = "Respuesta incorrecta. Lee la pregunta con atención o usa la pista. 💡";
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function toggleHint() {
+            document.getElementById('hint-text').classList.toggle('hidden');
+        }
+
+        document.getElementById('riddle-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkRiddle();
+        });
+
+        /* =============================================================
+           JUEGO DE LA VIEJA CON IA MINIMAX (100% COMPETITIVA)
+           ============================================================= */
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let isGameActive = true;
+        const PLAYER = '❤️';
+        const AI = '❌';
+
+        const WINNING_COMBOS = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+
+        function makeMove(index) {
+            if (board[index] !== '' || !isGameActive) return;
+
+            // Turno Jugador
+            board[index] = PLAYER;
+            updateCellUI(index, PLAYER);
+
+            if (checkWin(board, PLAYER)) {
+                handleVictory();
+                return;
+            }
+
+            if (isBoardFull(board)) {
+                handleDraw();
+                return;
+            }
+
+            // Turno de la IA
+            setTurnStatus("Pensando la jugada... 🤖", "text-purple-600");
+            isGameActive = false;
+
+            setTimeout(() => {
+                aiTurn();
+                
+                if (checkWin(board, AI)) {
+                    handleLoss();
+                } else if (isBoardFull(board)) {
+                    handleDraw();
+                } else {
+                    isGameActive = true;
+                    setTurnStatus("Tu turno (❤️)", "text-pink-600");
+                }
+            }, 450);
+        }
+
+        /* Algoritmo Minimax Ibatible / Desafiante */
+        function aiTurn() {
+            let bestScore = -Infinity;
+            let move;
+
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === '') {
+                    board[i] = AI;
+                    // Minimax completo para máxima dificultad
+                    let score = minimax(board, 0, false);
+                    board[i] = '';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+
+            if (move !== undefined) {
+                board[move] = AI;
+                updateCellUI(move, AI);
+            }
+        }
+
+        function minimax(tempBoard, depth, isMaximizing) {
+            if (checkWin(tempBoard, AI)) return 10 - depth;
+            if (checkWin(tempBoard, PLAYER)) return depth - 10;
+            if (isBoardFull(tempBoard)) return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (tempBoard[i] === '') {
+                        tempBoard[i] = AI;
+                        let score = minimax(tempBoard, depth + 1, false);
+                        tempBoard[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (tempBoard[i] === '') {
+                        tempBoard[i] = PLAYER;
+                        let score = minimax(tempBoard, depth + 1, true);
+                        tempBoard[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function updateCellUI(index, symbol) {
+            const cell = document.getElementById(`cell-${index}`);
+            cell.innerText = symbol;
+            cell.disabled = true;
+            if (symbol === PLAYER) {
+                cell.classList.add('text-pink-500');
+            } else {
+                cell.classList.add('text-purple-600');
+            }
+        }
+
+        function checkWin(currentBoard, symbol) {
+            return WINNING_COMBOS.some(combo => combo.every(idx => currentBoard[idx] === symbol));
+        }
+
+        function isBoardFull(currentBoard) {
+            return currentBoard.every(cell => cell !== '');
+        }
+
+        function setTurnStatus(text, colorClass) {
+            const indicator = document.getElementById('turn-indicator');
+            indicator.innerText = text;
+            indicator.className = `font-bold ${colorClass}`;
+        }
+
+        /* Manejo de Resultados */
+        function handleVictory() {
+            isGameActive = false;
+            triggerConfetti();
+            setTimeout(() => {
+                document.getElementById('win-modal').classList.remove('hidden');
+            }, 400);
+        }
+
+        function handleLoss() {
+            isGameActive = false;
+            document.getElementById('loss-title').innerText = "¡Te he ganado! 😜";
+            document.getElementById('loss-desc').innerText = "¡La IA jugó en serio! Pero tranquilo, vuelve a intentarlo para ganar y ver tu mensaje.";
+            document.getElementById('loss-icon').className = "fa-solid fa-robot";
+            setTimeout(() => {
+                document.getElementById('loss-modal').classList.remove('hidden');
+            }, 400);
+        }
+
+        function handleDraw() {
+            isGameActive = false;
+            // Un empate en la máxima dificultad equivale a haber jugado perfecto, así que desbloquea la victoria
+            document.getElementById('loss-title').innerText = "¡Excelente Empate! 🤝";
+            document.getElementById('loss-desc').innerText = "¡Jugaste perfecto! En este nivel de dificultad, un empate demuestra tu agudeza. ¡Has desbloqueado el mensaje!";
+            document.getElementById('loss-icon').className = "fa-solid fa-handshake";
+            
+            setTimeout(() => {
+                handleVictory();
+            }, 800);
+        }
+
+        function closeLossModal() {
+            document.getElementById('loss-modal').classList.add('hidden');
+            resetGame();
+        }
+
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            isGameActive = true;
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.getElementById(`cell-${i}`);
+                cell.innerText = '';
+                cell.disabled = false;
+            }
+
+            setTurnStatus("Tu turno (❤️)", "text-pink-600");
+        }
+
+        /* Confeti de Victoria */
+        function triggerConfetti() {
+            confetti({
+                particleCount: 140,
+                spread: 75,
+                origin: { y: 0.6 },
+                colors: ['#ec4899', '#a855f7', '#f43f5e']
+            });
+        }
+
+        /* Generar Corazones en Fondo */
+        function createHeartBg() {
+            const container = document.getElementById('heart-container');
+            const hearts = ['💖', '💕', '✨', '🌸', '💜', '👨‍👩‍👦'];
+            for (let i = 0; i < 16; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart-particle';
+                heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.left = `${Math.random() * 100}vw`;
+                heart.style.animationDuration = `${6 + Math.random() * 5}s`;
+                heart.style.animationDelay = `${Math.random() * 3}s`;
+                heart.style.fontSize = `${14 + Math.random() * 18}px`;
+                container.appendChild(heart);
+            }
+        }
+
+        window.onload = function() {
+            createHeartBg();
+            loadRiddle(0);
+        };
+    </script>
+</body>
+</html>
